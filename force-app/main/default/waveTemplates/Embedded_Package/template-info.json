@@ -1,0 +1,96 @@
+{
+  "templateType" : "embeddedapp",
+  "label" : "Embedded Package",
+  "name" : "Embedded_Package",
+  "namespace" : "EmbeddedApp",
+  "assetVersion" : 54.0,
+  "variableDefinition" : "variables.json",
+  "uiDefinition" : "ui.json",
+  "autoInstallDefinition" : "auto-install.json",
+  "rules" : [
+    {
+      "type" : "templateToApp",
+      "file" : "template-to-app-rules.json"
+    },
+    {
+      "type" : "appToTemplate",
+      "file" : "app-to-template-rules.json"
+    }
+  ],
+  "releaseInfo" : {
+    "templateVersion" : "1.2",
+    "notesFile" : "releaseNotes.html"
+  },
+  "folderDefinition" : "folder.json",
+  "externalFiles" : [ ],
+  "lenses" : [ ],
+  "dashboards" : [
+    {
+      "label" : "Embedded Overview",
+      "name" : "Copy_of_Embedded_Overview_tp",
+      "condition" : "${Variables.Overrides.createAllDashboards}",
+      "file" : "dashboards/Copy_of_Embedded_Overview.json"
+    }
+  ],
+  "components" : [ ],
+  "eltDataflows" : [
+    {
+      "label" : "Anvil Data Flow",
+      "name" : "Anvil_Data_Flow",
+      "condition" : "${Variables.Overrides.createDataflow}",
+      "file" : "dataflow/Anvil_Data_Flow.json"
+    }
+  ],
+  "recipes" : [ ],
+  "datasetFiles" : [
+    {
+      "label" : "Accounts",
+      "name" : "Accounts_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/Accounts_XMD.json"
+    },
+    {
+      "label" : "AccountSalesHistory",
+      "name" : "AccountSalesHistory_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/AccountSalesHistory_XMD.json"
+    },
+    {
+      "label" : "JDQuotes",
+      "name" : "JDQuotes_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/JDQuotes_XMD.json"
+    },
+    {
+      "label" : "OverdueTasks",
+      "name" : "OverdueTasks_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/OverdueTasks_XMD.json"
+    },
+    {
+      "label" : "Stores",
+      "name" : "Stores_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/Stores_XMD.json"
+    },
+    {
+      "label" : "Users",
+      "name" : "Users_tp",
+      "condition" : "${Variables.Overrides.createAllDatasetFiles}",
+      "userXmd" : "dataset_files/Users_XMD.json"
+    }
+  ],
+  "storedQueries" : [ ],
+  "imageFiles" : [ ],
+  "extendedTypes" : { },
+  "templateDependencies" : [ ],
+  "icons" : {
+    "appBadge" : {
+      "name" : "16.png"
+    },
+    "templateBadge" : {
+      "name" : "default.png"
+    },
+    "templatePreviews" : [ ]
+  }
+}

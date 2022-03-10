@@ -1,0 +1,17 @@
+{
+    "hooks": [
+      {
+        "type": "PackageInstall",
+        "requestName": "Installing/Upgrading the Embedded Package app"
+      }
+    ],
+    "configuration": {
+      "appConfiguration": {
+        "failOnDuplicateNames": false,
+        "autoShareWithLicensedUsers": true,
+        "autoShareWithOriginator": true,
+        "deleteAppOnConstructionFailure": true,
+        "values": {}
+      }
+    }
+  }

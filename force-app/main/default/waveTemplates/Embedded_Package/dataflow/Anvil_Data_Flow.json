@@ -1,0 +1,357 @@
+{
+  "isDeletable": true,
+  "longRunningAlertInMins": "",
+  "notificationLevel": "",
+  "workflowDefinition": {
+    "augmentSalesperson": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "getJDQuote",
+        "left_key": ["Anvil__Salesperson__c"],
+        "right_select": ["Name"],
+        "right": "getUsers",
+        "relationship": "Salesperson",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "augmentSalesManager": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "augmentSalesperson",
+        "left_key": ["Anvil__Sales_Manager__c"],
+        "right_select": ["Name"],
+        "right": "getUsers",
+        "relationship": "SalesManager",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "getStores": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "Anvil__Branch__c"},
+          {"name": "Anvil__Region__c"},
+          {"name": "Id"},
+          {"name": "Name"}
+        ],
+        "object": "Anvil__Store__c"
+      }
+    },
+    "augmentAccount": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "getAccountHistory",
+        "left_key": ["Anvil__Account__c"],
+        "right_select": ["Name"],
+        "right": "getAccounts",
+        "relationship": "account",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "registerStores": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "Stores",
+        "alias": "${App.Datasets.Stores_tp.FullyQualifiedName}",
+        "source": "getStores"
+      }
+    },
+    "registerJDQuotes": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "JDQuotes",
+        "alias": "${App.Datasets.JDQuotes_tp.FullyQualifiedName}",
+        "source": "computeTotalDays"
+      }
+    },
+    "getAccounts": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "Name"},
+          {"name": "Anvil__e_DaysHundredTwenty__c"},
+          {"name": "Anvil__e_DaysNinety__c"},
+          {"name": "Anvil__e_DaysSixty__c"},
+          {"name": "Anvil__e_DaysThirty__c"},
+          {"name": "Anvil__e_TotalBalance__c"},
+          {"name": "Anvil__Last_Activity_Days__c"},
+          {"name": "Anvil__Last_Activity_Logged_Date__c"},
+          {"name": "Anvil__Last_CG_Date__c"},
+          {"name": "Anvil__Last_Owner_Activity_Days__c"},
+          {"name": "Anvil__Last_Owner_Activity_Logged_Date__c"},
+          {"name": "Anvil__Last_Parts_Date__c"},
+          {"name": "Anvil__Last_Service_Date__c"},
+          {"name": "Id"},
+          {"name": "OwnerId"},
+          {"name": "Anvil__e_CurrentBalance__c"}
+        ],
+        "object": "Account"
+      }
+    },
+    "augmentCustomer": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "augmentStore",
+        "left_key": ["Anvil__Customer__c"],
+        "right_select": [
+          "Name",
+          "Anvil__e_CurrentBalance__c",
+          "Anvil__Last_Activity_Days__c",
+          "Anvil__Last_Owner_Activity_Days__c"
+        ],
+        "right": "getAccounts",
+        "relationship": "Customer",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "registerAccounts": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "Accounts",
+        "alias": "${App.Datasets.Accounts_tp.FullyQualifiedName}",
+        "source": "augmentAccountOwner"
+      }
+    },
+    "augmentAccountOwner": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "getAccounts",
+        "left_key": ["OwnerId"],
+        "right_select": ["Name"],
+        "right": "getUsers",
+        "relationship": "Owner",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "augmentStore": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "augmentSalesManager",
+        "left_key": ["Anvil__Store_Location__c"],
+        "right_select": [
+          "Name",
+          "Anvil__Region__c"
+        ],
+        "right": "getStores",
+        "relationship": "Store",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "registerAccountHistory": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "AccountSalesHistory",
+        "alias": "${App.Datasets.AccountSalesHistory_tp.FullyQualifiedName}",
+        "source": "augmentAccount"
+      }
+    },
+    "computeOverdue": {
+      "action": "computeExpression",
+      "parameters": {
+        "source": "augmentAccountTask",
+        "mergeWithSource": true,
+        "computedFields": [{
+          "precision": 18,
+          "name": "overdueTaskDays",
+          "saqlExpression": "date_diff(\"day\", toDate(ActivityDate_sec_epoch), now() )",
+          "scale": 0,
+          "label": "overdueTaskDays",
+          "type": "Numeric"
+        }]
+      }
+    },
+    "getUsers": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "Name"},
+          {"name": "Id"}
+        ],
+        "object": "User"
+      }
+    },
+    "regAccountTasks": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "OverdueTasks",
+        "alias": "${App.Datasets.OverdueTasks_tp.FullyQualifiedName}",
+        "source": "computeOverdue"
+      }
+    },
+    "computeJDQuote": {
+      "action": "computeExpression",
+      "parameters": {
+        "source": "augmentCustomer",
+        "mergeWithSource": true,
+        "computedFields": [{
+          "saqlExpression": "case \nwhen 'Anvil__Status__c' == \"New\" then \"01. New\" \nwhen 'Anvil__Status__c' == \"Identify Needs\" then \"02. Identify Needs\" \nwhen 'Anvil__Status__c' == \"Present Solutions\" then \"03. Present Solutions\" \nwhen 'Anvil__Status__c' == \"Negotiation/Review\" then \"04. Negotiation/Review\" \nwhen 'Anvil__Status__c' == \"Sold\" then \"05. Won\" \nwhen 'Anvil__Status__c' == \"Lost\" then \"06. Lost\" \nelse \"11. Other\" \nend",
+          "name": "StageSort",
+          "label": "Stage",
+          "type": "Text"
+        }]
+      }
+    },
+    "augmentAccountTask": {
+      "action": "augment",
+      "parameters": {
+        "right_key": ["Id"],
+        "left": "getTask",
+        "left_key": ["AccountId"],
+        "right_select": [
+          "Id",
+          "Name"
+        ],
+        "right": "getAccounts",
+        "relationship": "Task",
+        "operation": "LookupSingleValue"
+      }
+    },
+    "getJDQuote": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "Anvil__BalanceDue__c"},
+          {"name": "Anvil__Closed__c"},
+          {"name": "Anvil__Customer__c"},
+          {"name": "Anvil__Date_Marked_Sold__c"},
+          {"name": "Anvil__Days_in_Stage__c"},
+          {"name": "Anvil__Equipment_Summary__c"},
+          {"name": "Anvil__GrossMargin__c"},
+          {"name": "Anvil__GrossProfit__c"},
+          {"name": "Anvil__Identify_Needs_Date__c"},
+          {"name": "Anvil__Identify_Needs_Time__c"},
+          {"name": "Anvil__JDQuote_Total__c"},
+          {"name": "Anvil__Junk__c"},
+          {"name": "Anvil__LastModifiedDate__c"},
+          {"name": "Anvil__Last_Status_Change_Date__c"},
+          {"name": "Anvil__LostAmount__c"},
+          {"name": "Anvil__LostReasonComments__c"},
+          {"name": "Anvil__LostReason__c"},
+          {"name": "Anvil__Lost_Date__c"},
+          {"name": "Anvil__Lost__c"},
+          {"name": "Anvil__Negotiation_Review_Time__c"},
+          {"name": "Anvil__Negotiation_Review__c"},
+          {"name": "Anvil__NetCost__c"},
+          {"name": "Anvil__NetProceeds__c"},
+          {"name": "Anvil__Net_Trade_Allowance__c"},
+          {"name": "Anvil__New_Date__c"},
+          {"name": "Anvil__New_Time__c"},
+          {"name": "Anvil__Pipeline_Status__c"},
+          {"name": "Anvil__Present_Quote_Date__c"},
+          {"name": "Anvil__Present_Quote_Time__c"},
+          {"name": "Anvil__QuoteName__c"},
+          {"name": "Anvil__Salesperson__c"},
+          {"name": "Anvil__Sales_Manager__c"},
+          {"name": "Anvil__Sold_Date__c"},
+          {"name": "Anvil__Sold__c"},
+          {"name": "Anvil__Store_Location__c"},
+          {"name": "Anvil__totalEquipmentCost__c"},
+          {"name": "Anvil__totalEquipmentList__c"},
+          {"name": "Anvil__totalNetTradeValue__c"},
+          {"name": "Anvil__Total_Selling_Price__c"},
+          {"name": "Anvil__TradeDifference__c"},
+          {"name": "Anvil__Trade_In_Summary__c"},
+          {"name": "Anvil__Won__c"},
+          {"name": "Id"},
+          {"name": "Name"},
+          {"name": "Anvil__QuoteStatus__c"},
+          {"name": "Anvil__Status__c"},
+          {"name": "LastActivityDate"},
+          {"name": "Anvil__Expected_Close_Date__c"},
+          {"name": "CreatedDate"}
+        ],
+        "object": "Anvil__JDQuote__c"
+      }
+    },
+    "computeTotalDays": {
+      "action": "computeExpression",
+      "parameters": {
+        "source": "computeJDQuote",
+        "mergeWithSource": true,
+        "computedFields": [
+          {
+            "precision": 18,
+            "name": "ClosedDays",
+            "saqlExpression": "case when 'Anvil__Closed__c' == \"true\" then date_diff(\"day\", toDate('CreatedDate_sec_epoch'), toDate('Anvil__Expected_Close_Date__c_sec_epoch' )) end\n",
+            "scale": 0,
+            "label": "ClosedDays",
+            "type": "Numeric"
+          },
+          {
+            "precision": 18,
+            "name": "OpenDays",
+            "saqlExpression": "case when 'Anvil__Closed__c' == \"false\" then date_diff(\"day\", toDate('CreatedDate_sec_epoch'), now() )  end\n",
+            "scale": 0,
+            "label": "OpenDays",
+            "type": "Numeric"
+          }
+        ]
+      }
+    },
+    "getTask": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "AccountId"},
+          {"name": "ActivityDate"},
+          {"name": "Anvil__Account_Name__c"},
+          {"name": "Anvil__Overdue__c"},
+          {"name": "Id"}
+        ],
+        "object": "Task"
+      }
+    },
+    "registerUsers": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "name": "Users",
+        "alias": "${App.Datasets.Users_tp.FullyQualifiedName}",
+        "source": "getUsers"
+      }
+    },
+    "getAccountHistory": {
+      "action": "sfdcDigest",
+      "parameters": {
+        "fields": [
+          {"name": "Anvil__Account__c"},
+          {"name": "Anvil__e_Parts_Cost__c"},
+          {"name": "Anvil__e_Parts_GP__c"},
+          {"name": "Anvil__e_Parts_Margin__c"},
+          {"name": "Anvil__e_Parts__c"},
+          {"name": "Anvil__e_Rental_Cost__c"},
+          {"name": "Anvil__e_Rental_GP__c"},
+          {"name": "Anvil__e_Rental_Margin__c"},
+          {"name": "Anvil__e_Rental__c"},
+          {"name": "Anvil__e_Sales_Cost__c"},
+          {"name": "Anvil__e_Sales_GP__c"},
+          {"name": "Anvil__e_Sales_Margin__c"},
+          {"name": "Anvil__e_Sales__c"},
+          {"name": "Anvil__e_Service_Cost__c"},
+          {"name": "Anvil__e_Service_GP__c"},
+          {"name": "Anvil__e_Service_Margin__c"},
+          {"name": "Anvil__e_Service__c"},
+          {"name": "Anvil__e_Total_Cost__c"},
+          {"name": "Anvil__e_Total_GP__c"},
+          {"name": "Anvil__e_Total_Margin__c"},
+          {"name": "Anvil__e_Total_Rev__c"},
+          {"name": "Anvil__FiscalYear__c"}
+        ],
+        "object": "Anvil__Account_Sales_History__c"
+      }
+    }
+  },
+  "DataflowType": "USER",
+  "_type": "dataflow",
+  "name": "EmbeddedApp__Anvil_Data_Flow",
+  "MasterLabel": "Anvil Data Flow",
+  "_url": "/insights/internal_api/v1.0/esObject/workflow//json",
+  "_uid": "",
+  "nextRun": "",
+  "WorkflowStatus": "Inactive"
+}
